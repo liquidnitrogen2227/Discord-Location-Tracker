@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Location Tracking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📍 Location Tracker</h1>
+        <div id="status" class="status-box">Waiting to start tracking...</div>
+        <div class="distance-display" id="distance">Distance: --</div>
+        <div class="button-group">
+            <!-- Add this button temporarily for testing -->
+            <button onclick="testDiscord()" class="test-btn">Test Discord Message</button>
+            <!-- Add this button temporarily for testing -->
+            <button onclick="checkCurrentLocation()" class="test-btn">Check Current Location</button>
+            <button onclick="startTracking()" class="btn start">Start Tracking</button>
+            <button onclick="stopTracking()" class="btn stop">Stop Tracking</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
