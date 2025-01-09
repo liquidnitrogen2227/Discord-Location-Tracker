@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Location Tracking</title>
+    <title>Checkpoint Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #status {
+            margin: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📍 Location Tracker</h1>
-        <div id="status" class="status-box">Waiting to start tracking...</div>
-        <div class="distance-display" id="distance">Distance: --</div>
-        <div class="button-group">
-            <!-- Add this button temporarily for testing -->
-            <button onclick="testDiscord()" class="test-btn">Test Discord Message</button>
-            <!-- Add this button temporarily for testing -->
-            <button onclick="checkCurrentLocation()" class="test-btn">Check Current Location</button>
-            <button onclick="startTracking()" class="btn start">Start Tracking</button>
-            <button onclick="stopTracking()" class="btn stop">Stop Tracking</button>
-        </div>
-    </div>
-    <script src="script.js"></script>
+    <h1>Checkpoint Tracker</h1>
+    <div id="status">Ready to track</div>
+    <button onclick="startTracking()">Start Tracking</button>
+    <button onclick="stopTracking()">Stop Tracking</button>
 </body>
+<script src="script.js"></script>
 </html>

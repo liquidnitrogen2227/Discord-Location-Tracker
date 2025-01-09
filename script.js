@@ -6,84 +6,62 @@ const TARGET_LOCATION = {
     radius: 100 // Distance in meters
 };
 
-let watchId = null;
-let lastNotificationTime = 0;
-const NOTIFICATION_COOLDOWN = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CHECKPOINTS = [
+    {
+        name: "Home",
+        lat: 12.9130004,  // Replace with actual latitude
+        lng: 77.5514108,  // Replace with actual longitude
+        radius: 50,  // 50 meters radius
+        passed: false  // To track if checkpoint has been passed
+    },
+    
+];
 
-async function sendDiscordMessage(message) {
-    try {
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                content: message,
-                username: 'Location Tracker'
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        console.log('Discord message sent successfully!');
-    } catch (error) {
-        console.error('Error sending Discord message:', error);
-        document.getElementById('status').innerHTML = 
-            `Error sending notification: ${error.message}`;
-    }
-}
+let watchId = null;
 
 function startTracking() {
     if ("geolocation" in navigator) {
+        document.getElementById('status').textContent = 'Tracking Started...';
+        
         watchId = navigator.geolocation.watchPosition(
-            handlePosition,
-            handleError,
+            checkCheckpoints,
+            (error) => console.error('Error:', error),
             {
                 enableHighAccuracy: true,
                 maximumAge: 30000,
                 timeout: 27000
             }
         );
-        document.getElementById('status').innerHTML = 
-            '🟢 Tracking active...';
-        sendDiscordMessage('📍 Location tracking started!');
     } else {
-        alert("Geolocation is not supported by this browser.");
+        alert("Geolocation is not supported by your browser.");
     }
 }
 
 function stopTracking() {
     if (watchId) {
         navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-        document.getElementById('status').innerHTML = 
-            '🔴 Tracking stopped';
-        sendDiscordMessage('⏹️ Location tracking stopped!');
+        document.getElementById('status').textContent = 'Tracking Stopped';
+        // Reset all checkpoints
+        CHECKPOINTS.forEach(checkpoint => checkpoint.passed = false);
     }
 }
 
-function handlePosition(position) {
+function checkCheckpoints(position) {
     const currentLocation = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
     };
 
-    const distance = calculateDistance(
-        currentLocation,
-        TARGET_LOCATION
-    );
-
-    document.getElementById('distance').innerText = 
-        `Distance to target: ${Math.round(distance)}m`;
-
-    // Check if we're within the radius and if enough time has passed since last notification
-    if (distance <= TARGET_LOCATION.radius && 
-        Date.now() - lastNotificationTime >= NOTIFICATION_COOLDOWN) {
-        sendDiscordMessage(`🎯 Target location reached!\nCurrent distance: ${Math.round(distance)}m`);
-        lastNotificationTime = Date.now();
-    }
+    CHECKPOINTS.forEach(checkpoint => {
+        if (!checkpoint.passed) {  // Only check if checkpoint hasn't been passed
+            const distance = calculateDistance(currentLocation, checkpoint);
+            
+            if (distance <= checkpoint.radius) {
+                checkpoint.passed = true;
+                sendDiscordMessage(checkpoint.name);
+            }
+        }
+    });
 }
 
 function calculateDistance(point1, point2) {
@@ -101,14 +79,7 @@ function calculateDistance(point1, point2) {
     return R * c;
 }
 
-function handleError(error) {
-    console.error('Error getting location:', error);
-    document.getElementById('status').innerHTML = 
-        `⚠️ Error: ${error.message}`;
-}
-
-// Add this function to test Discord webhook
-async function testDiscord() {
+async function sendDiscordMessage(checkpointName) {
     try {
         const response = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
@@ -116,23 +87,15 @@ async function testDiscord() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                content: "🔔 Test message from Location Tracker!",
-                username: "Location Tracker"
+                content: `✅ ${checkpointName} reached!`,
+                username: 'Checkpoint Tracker'
             })
         });
         
-        if (response.ok) {
-            alert("Test message sent successfully!");
-        } else {
-            alert("Failed to send test message");
+        if (!response.ok) {
+            throw new Error('Failed to send Discord message');
         }
     } catch (error) {
-        alert("Error: " + error.message);
+        console.error('Error sending to Discord:', error);
     }
-}
-// Add this function to check current coordinates
-function checkCurrentLocation() {
-    navigator.geolocation.getCurrentPosition((position) => {
-        alert(`Current Location:\nLatitude: ${position.coords.latitude}\nLongitude: ${position.coords.longitude}`);
-    });
 }
